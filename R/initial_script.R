@@ -268,7 +268,7 @@ u_intercept <- (0.6 * male_ffm_sigma) + (0.4 * female_ffm_sigma) # weighted rand
 sigma <- 0.35 # rough estimate of measurement error taken from 10.1123/ijsnem.2018-0283
 
 # set up data structure
-data <- add_random(subj = 1000) %>%
+data <- add_random(subj = 10000) %>%
   # add within participant time
   add_within("subj", time = c(0,6,12,18,24,30)) |>
   mutate(period = case_when(
@@ -290,12 +290,19 @@ data <- add_random(subj = 1000) %>%
 
 
 data |>
-  ggplot(aes(x=time, y=ffm,
+  ggplot(aes(x=factor(time), y=ffm,
              color = factor(intervention),
              group = interaction(factor(intervention), factor(period)))) +
   # geom_point() +
+  stat_smooth(data = data |> filter(period == 0),
+              method = "lm", fullrange = TRUE, linetype = "dashed", se = FALSE) +
   geom_smooth(method = "lm")
-  
+
+# Parameter of interest is the time:intervention:period which reflects the diff in rt and rt+glp1
+lme4::lmer(ffm ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time +
+             (1 | subj),
+           REML = TRUE,
+           data = data)  
 
 
 
