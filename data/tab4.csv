@@ -1,0 +1,9 @@
+study,energy_restriction,energy_deficit,outcome,yi,ci.lb,ci.ub
+Thomas 201185,1,194,LM,0.39,0.22,0.56
+Thomas 201185,1,194,STR,2.47,1.97,2.96
+Schmitz 200386,0,72,LM,0.39,0.27,0.52
+Schmitz 200386,0,72,STR,1.01,0.81,1.22
+Galedari 201787,1,438,LM,0.07,-0.13,0.27
+Bird 200688,0,170,LM,0.63,0.38,0.88
+Reljic 202189,1,,STR,0.66,0.45,0.86
+Polito 202190,0,,STR,0.32,0.06,0.58
