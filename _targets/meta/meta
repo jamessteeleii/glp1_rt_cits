@@ -1,19 +1,29 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-get_SMD_glp1_effect|function|440c47073955252e
-read_prep_benito_data|function|7fd40a570dca0e2d
-read_prep_karakakis_data|function|057581e119c9c18e
-prep_krupa_data|function|9c7f437cf07f846c
-read_prep_beaver_data|function|0767e1c5326c04c5
-get_raw_glp1_effect|function|2de9f04502c5bd42
-read_prep_murphy_koehler_data|function|cd7ab3de1af6de5a
 benito_data_file|stem|5d5df98b12dd0ad2|a06043ee2ad8ef65|2c530c1562a7fbd1|-447947582|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/benito_study_data.csv|t20200.6771220424s|s8798b|8798|file|local|vector|||1.34||
 raw_glp1_effect|stem|ddca7d49b41aa481|f6ddf35e6ef61fe7|1e44e9f96c4e3fe0|-674087343||t20201.4082341673s|s55b|55|rds|local|vector|||0.01||
 murphy_koehler_data_file|stem|e9387be6ecdaf979|17e20b25a0e76910|2c530c1562a7fbd1|-2006996587|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/murphy_koehler_study_data.csv|t20194.6792054313s|s3612b|3612|file|local|vector|||0||
 krupa_data|stem|8bc83c694090f7af|f0ccff97f64e12c0|ef2b7a486f548f3d|1711686159||t20201.4082354936s|s380b|380|rds|local|vector|||0.03||
 karakakis_data_file|stem|6742f33135845070|c3d56fa5b2728da6|2c530c1562a7fbd1|337189100|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/karakakis_baseline_study_data.csv|t20194.5438160187s|s4637b|4637|file|local|vector|||0||
-beaver_data_file|stem|6bdd995cba117998|a72a82d57769fcd3|2c530c1562a7fbd1|-494364525|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/beaver_study_data.csv|t20195.4912844341s|s678b|678|file|local|vector|||0||
 benito_data|stem|bd5a39fd1e7d586a|9c149830aa6c8b46|b15fc900e7e86a76|1052204245||t20201.4082389129s|s1901b|1901|rds|local|vector|||0.25|input string 3 is invalid UTF-8. input string 4 is invalid UTF-8. input string 56 is invalid UTF-8. input string 133 is invalid UTF-8. [1m[22mExpected 2 pieces. Missing pieces filled with `NA` in 40 rows [1, 2, 3, 4, 5, 20, 21, 28, 31, 35, 36, 39, 40, 47, 56, 68, 71, 72, 74, 85, ...].|
 murphy_koehler_data|stem|a83a23e5b6aad2e9|ba3946f8e9bc57c7|fda17b05e44ee3a0|1678654920||t20201.4082401083s|s1119b|1119|rds|local|vector|||0.08||
 karakakis_data|stem|1e211e58ff98ec7e|43b8df18b3a8c802|04c0261467febdb8|1060355703||t20201.4082419884s|s808b|808|rds|local|vector|||0.14|input string 41 is invalid UTF-8. input string 42 is invalid UTF-8. [1m[22mExpected 2 pieces. Missing pieces filled with `NA` in 17 rows [6, 12, 13, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 47, 51, 52, 55].. [1m[22mThere was 1 warning in `mutate()`. [1m[22m[36mℹ[39m In argument: `mean = parse_number(mean)`. Caused by warning: [33m![39m 15 parsing failures. row col expected actual   6  -- a number     NR  12  -- a number     NR  13  -- a number     NR  33  -- a number     NR  34  -- a number     NR ... ... ........ ...... See problems(...) for more details.|
-beaver_data|stem|27ef1e69e15f8681|f25711545dd8ca11|c2ec13cad071fc8a|-661966150||t20201.4082434218s|s658b|658|rds|local|vector|||0.11||
 SMD_glp1_effect|stem|edf3e83e55b04509|d19608700f477b0f|a43f81bcfbd5b49e|-855410416||t20201.4082441991s|s55b|55|rds|local|vector|||0.05|22 rows with NAs omitted from model fitting.|
+SMD_energy_restriction_effect|stem|c8607c2118ed54b6|dcd058531c0d1192|673d494038791a1f|1823705654||t20201.4537186579s|s723b|723|rds|local|vector|||0.02||
+SMD_RT_effect|stem|3b339b6a198490da|ee3ee6189149b522|570fd9cdd53380db|-1820462564||t20201.4537200297s|s55b|55|rds|local|vector|||0.08||
+raw_RT_effect|stem|4e98d760fc4d5624|5ece95b60a3088df|c905193593cc6214|2019948347||t20201.4537212484s|s55b|55|rds|local|vector|||0.07||
+SMD_RT_energy_restriction_effect|stem|5c93b3d9a2015a18|aff7ba44c4f2100d|0359b27d2990f9dc|711602994||t20201.4537230156s|s56b|56|rds|local|vector|||0.14||
+beaver_data_file|stem|57f20858edf47eac|a72a82d57769fcd3|2c530c1562a7fbd1|-494364525|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/beaver_study_data.csv|t20201.4595529691s|s653b|653|file|local|vector|||1.31||
+check_glp1_irv_assumption|function|d7ffdf6d0d3b2402
+get_SMD_energy_restriction_effect|function|ea1f07b636cd722c
+get_SMD_glp1_effect|function|440c47073955252e
+get_SMD_RT_energy_restriction_effect|function|b1bd107bbfeead8b
+read_prep_benito_data|function|7fd40a570dca0e2d
+get_SMD_RT_effect|function|514ec2aa00717148
+read_prep_karakakis_data|function|057581e119c9c18e
+prep_krupa_data|function|9c7f437cf07f846c
+get_raw_RT_effect|function|4e7a675f6bb6a2b9
+read_prep_beaver_data|function|970ea035803c862c
+get_raw_glp1_effect|function|2de9f04502c5bd42
+read_prep_murphy_koehler_data|function|cd7ab3de1af6de5a
+beaver_data|stem|96132633f0c9d36c|f25711545dd8ca11|4cefc7fa77665c7b|-661966150||t20201.4821295842s|s508b|508|rds|local|vector|||0.25||
+irv_glp1_effect|stem|8ec4d1f8da321eca|9a38c0f18fcd4b2c|08d0e240b9f5d033|1799638176||t20201.4821306217s|s230b|230|rds|local|vector|||0.05|3 studies with NAs omitted from model fitting.. Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs.. 4 studies with NAs omitted from model fitting.|
