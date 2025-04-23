@@ -4,6 +4,10 @@ library(metafor)
 library(emmeans)
 library(faux)
 
+# cHECKLIST https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-021-01235-8
+# MISSINGNESS https://pubmed.ncbi.nlm.nih.gov/34326669/
+
+
 ##### Setting parameters for simulations ----
 
 # Baseline lean mass data - taken from studies included in 10.1016/j.metabol.2024.156113 
@@ -81,7 +85,11 @@ benito_data <- read_csv("data/benito_study_data.csv") |>
   mutate(
     arm = cur_group_id()
   ) |>
-  filter(outcome == "ffm")
+  filter(outcome == "ffm") |>
+  mutate(
+    duration_centre = duration/12
+  ) |>
+  filter(!is.na(duration))
 
 benito_data <- escalc(
   measure = "MC",
@@ -95,7 +103,8 @@ benito_data <- escalc(
 )
 
 benito_meta_raw <- rma.mv(yi, vi,
-                                       random = list(~ 1 | study, ~ 1 | arm),
+                                       random = list(~ duration_centre | study, ~ duration_centre | arm),
+                          mods = ~ duration_centre,
                                        data = benito_data,
                                        method="REML", test="t"
 )
@@ -216,7 +225,7 @@ krupa_data <- escalc(
     ci.ub = yi + sqrt(vi) * 1.96
   ) 
 
-# Note we don't assume any interinvidual slope variation as little evidence for IRV from 10.1002/oby.24172 data
+# Note we don't assume any interindividual slope variation as little evidence for IRV from 10.1002/oby.24172 data
 
 beaver_data <- read_csv("data/beaver_study_data.csv") |>
   janitor::clean_names() |>
@@ -264,11 +273,12 @@ b_rt <- mean_effect_rt/12 # effect of rt by week
 b_glp1 <- mean_effect_glp1/12 # effect of glp1 by week
 b_period <- 1 
 b_intervention <- 1
+rho_AR <- 0.5
 u_intercept <- (0.6 * male_ffm_sigma) + (0.4 * female_ffm_sigma) # weighted random intercept as roughly 60:40 split of males and females using glp1
 sigma <- 0.35 # rough estimate of measurement error taken from 10.1123/ijsnem.2018-0283
 
 # set up data structure
-data <- add_random(subj = 10000) %>%
+data <- add_random(subj = 100) %>%
   # add within participant time
   add_within("subj", time = c(0,6,12,18,24,30)) |>
   mutate(period = case_when(
@@ -286,7 +296,20 @@ data <- add_random(subj = 10000) %>%
            (b_sex*sex) + 
            (b_rt*time) + (b_glp1*time*period*intervention) +
            (b_period*period*intervention) +
-           sigma)
+           sigma) |>
+  group_by(subj) |>
+  mutate(
+    sigma = case_when(
+      time == 0 ~ sigma,
+      .default = sigma + rho_AR*lag(sigma)
+    ),
+    ffm_AR = b_intercept + u_intercept + 
+      (b_sex*sex) + 
+      (b_rt*time) + (b_glp1*time*period*intervention) +
+      (b_period*period*intervention) +
+      sigma
+  )
+         
 
 
 data |>
@@ -298,15 +321,36 @@ data |>
               method = "lm", fullrange = TRUE, linetype = "dashed", se = FALSE) +
   geom_smooth(method = "lm")
 
-# Parameter of interest is the time:intervention:period which reflects the diff in rt and rt+glp1
-lme4::lmer(ffm ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time +
-             (1 | subj),
-           REML = TRUE,
-           data = data)  
+library(nlme)
+
+model <- lme(ffm_AR ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time,
+                   random = ~ 1 | subj, data = data, correlation = corARMA(form = ~ 1 | subj, p = 1, q = 1))
 
 
+summary(model)
 
 
+plot(nlme::ACF(model, resType="normalized"), alpha = 0.05)
 
+library(marginaleffects)
 
+avg_slopes(
+  model,
+  # newdata = datagrid(
+  #   sex = 0,
+  #   time = c(18,24,30),
+  #   intervention = 1,
+  #   period = 1,
+  #   # subj = NA
+  # ),
+  by = c("intervention","period"),
+  variables = "time",
+  equivalence = c(-0.07, 0.13), 
+  re.form = NA
+)
+
+# TO VARY IN SIMULATIONS
+# NO. REVIEW TIME POINTS (EVERY ~12 WEEKS, VARY AROUND THAT EXACT TIME E.G. BY ~2 WEEKS) - ADD MISSINGNESS E.G., MISS REVIEW
+# RANDOM SLOPE ASSUMPTION FOR TIME (I.E,. RT) AND ALSO GLP1 - NOT LIKELY, BUT BE CONSERVATIVE
+# the review numbers determine duration of intervention too - check Benito data based on duration of 24 weeks
 

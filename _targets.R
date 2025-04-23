@@ -9,7 +9,12 @@ library(targets)
 
 # Set target options:
 tar_option_set(
-  packages = c("tibble") # Packages that your targets need for their tasks.
+  packages = c(
+    "here",
+    "tidyverse",
+    "metafor",
+    "faux"
+  ) # Packages that your targets need for their tasks.
   # format = "qs", # Optionally set the default storage format. qs is fast.
   #
   # Pipelines that take a long time to run may benefit from
@@ -50,13 +55,45 @@ tar_source("R/functions.R")
 
 # Replace the target list below with your own:
 list(
+  ##### Pre-registration targets ----
+
+  ### Read in and prepare data to use for determining parameters in simulations
+  
+  # Load and prepare data from previous meta-analyses and studies
   tar_target(
-    name = data,
-    command = tibble(x = rnorm(100), y = rnorm(100))
-    # format = "qs" # Efficient storage for general data objects.
+    karakakis_data_file,
+    here("data", "karakakis_baseline_study_data.csv"),
+    format = "file"
   ),
+  tar_target(karakakis_data, read_prep_karakakis_data(karakakis_data_file)),
+  
   tar_target(
-    name = model,
-    command = coefficients(lm(y ~ x, data = data))
-  )
+    benito_data_file,
+    here("data", "benito_study_data.csv"),
+    format = "file"
+  ),
+  tar_target(benito_data, read_prep_benito_data(benito_data_file)),
+  
+  tar_target(
+    murphy_koehler_data_file,
+    here("data", "murphy_koehler_study_data.csv"),
+    format = "file"
+  ),
+  tar_target(murphy_koehler_data, read_prep_murphy_koehler_data(murphy_koehler_data_file)),
+  
+  tar_target(krupa_data, prep_krupa_data()),
+  
+  tar_target(
+    beaver_data_file,
+    here("data", "beaver_study_data.csv"),
+    format = "file"
+  ),
+  tar_target(beaver_data, read_prep_beaver_data(beaver_data_file)),
+  
+  ### Prepare parameters for simulations and check assumptions
+  tar_target(raw_glp1_effect, get_raw_glp1_effect()),
+  
+  tar_target(SMD_glp1_effect, get_SMD_glp1_effect(karakakis_data, raw_glp1_effect))
+  
 )
+  
