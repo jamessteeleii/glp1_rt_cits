@@ -11,7 +11,10 @@ library(targets)
 tar_option_set(packages = c("here",
                             "tidyverse",
                             "metafor",
-                            "faux")) # Packages that your targets need for their tasks.
+                            "faux",
+                            "nlme",
+                            "marginaleffects",
+                            "furrr")) # Packages that your targets need for their tasks.
                # format = "qs", # Optionally set the default storage format. qs is fast.
                #
                # Pipelines that take a long time to run may benefit from
@@ -101,7 +104,24 @@ tar_option_set(packages = c("here",
                  
                  # Check assumption of interindividual response variation to GLP1-RA on lean mass
                  tar_target(irv_glp1_effect,
-                            check_glp1_irv_assumption(beaver_data))
+                            check_glp1_irv_assumption(beaver_data)),
+                 
+                 tar_target(intercepts_lean_mass,
+                            set_intercepts_lean_mass()),
+                 tar_target(measurement_error,
+                            set_measurement_error()),
+                 
+                 
+                 ### Set parameters and run simulation for power
+                 tar_target(simulation_parameters,
+                            define_simulation_parameters(intercepts_lean_mass,
+                                                         raw_RT_effect,
+                                                         raw_glp1_effect,
+                                                         measurement_error)),
+                 
+                 tar_target(power_simulations,
+                            simulate_power(simulation_parameters))
+
                  
                )
                

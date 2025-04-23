@@ -2,7 +2,7 @@
 
 ##### Functions for pre-registration power simulations ----
 
-### Read in and prepare data to use for determining parameters in simulations
+### Read in and prepare data to use for determining parameters in simulations ----
 
   # Read and prepare Karakakis et al (10.1016/j.metabol.2024.156113) data (baseline lean mass) to use for GLP1-RA SMD
   read_prep_karakakis_data <- function(file) {
@@ -142,7 +142,7 @@
     
   }
 
-### Prepare parameters for simulations and check assumptions
+### Prepare parameters for simulations and check assumptions ----
 
   # Overall estimate for raw effect of GLP1-RAs vs placebo/control on lean mass from 10.1016/j.metabol.2024.156113
   get_raw_glp1_effect <- function() {
@@ -313,4 +313,139 @@
     )
     
   }
+  
+  # Set intercepts i.e., baseline lean mass values
+  # Kieser members ~55yrs old so values taken for lean mass for 50 yr olds from 10.1002/jcsm.12712
+  # Note, assuming median = mean and a normal distribution to determine sigma
+  set_intercepts_lean_mass <- function() {
+    
+    intercepts_lean_mass <- tibble(
+      male_lean_mass = 66,
+      female_lean_mass = 45.4,
+      male_lean_mass_sigma = (50.8 - 66) / qnorm(0.03),
+      female_lean_mass_sigma = (34.8 - 45.4) / qnorm(0.03),
+    )
+    
+  }
+  
+  # Set error term based on approx measurement error taken from 
+  set_measurement_error <- function() {
+    # sigma <- 0.35 10.1123/ijsnem.2018-0283
+    sigma <- 2.5 # from above but conservative just based on triangulating agreement between devices
+    # sigma <- 0.6 # https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2024.1491931/full 
+    
+  }
+  
+### Simulate data for an interrupted time series with control ----
+  
+  # Define all simulation parameters
+  # Note approx 60% male users and 40% female - from 10.1007/s00228-023-03539-8 - so weighted intercept and sigma
+  define_simulation_parameters <- function(intercepts_lean_mass,
+                                           raw_RT_effect,
+                                           raw_glp1_effect,
+                                           measurement_error) {
+    
+    simulation_parameters <- crossing(
+      rep = 1:10, # number of replicates
+      participant_n = seq(10,200, by = 10), # range of participant N
+      measurement_n = 5, # number of measurements total (before and after intervention introduction)
+      b_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass,intercepts_lean_mass$female_lean_mass), c(0.6,0.4)), # centred baseline intercept
+      b_sex = intercepts_lean_mass$male_lean_mass - intercepts_lean_mass$female_lean_mass, # male-female weight diff in 
+      b_rt = c(raw_RT_effect/12, (raw_glp1_effect/12)*-1), # effect of rt by week
+      b_glp1 = raw_glp1_effect/12, # effect of glp1 by week
+      b_period = 1, 
+      b_intervention = 1,
+      rho_AR = c(0,0.5,1),
+      u_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass_sigma,intercepts_lean_mass$female_lean_mass_sigma), c(0.6,0.4)), # weighted random intercept as roughly 60:40 split of males and females using glp1
+      sigma = measurement_error
+    )
+    
+  }
+
+  
+  
+  simulate_power <- function(simulation_parameters) {
+    
+    sim <- function(participant_n = as.double(), measurement_n = as.double(),
+                    b_intercept = as.double(), b_sex = as.double(), b_rt = as.double(), b_glp1 = as.double(), # fixed effects
+                    b_period = 1, b_intervention = 1, # fixed effects 
+                    u_intercept = as.double(), # random intercept
+                    sigma = as.double(), # measurement error,
+                    rho_AR = as.double(), # autocorrelation coefficient,
+                    prop_missing = as.double(), # proportion of missing data
+                    ... # helps the function work with pmap() below
+    ) {
+      
+      weeks <- measurement_n*12
+      
+      # set up data structure
+      data <- add_random(participant = participant_n) %>%
+        # add within participant time
+        add_within("participant", time = seq(from=0,to=weeks, by=12)) |>
+        mutate(period = case_when(
+          time >= weeks/2 ~ 1,
+          .default = 0
+        )) |>
+        # add and code categorical variables
+        add_between("participant", intervention = c(0, 1)) %>% # con = 0, glp1 = 1
+        add_between("participant", sex = c(-0.5, 0.5), .prob = c(0.4, 0.6)) %>% # female = -0.5, male  = 0.5
+        # add random effects 
+        add_ranef("participant", u_intercept = u_intercept) %>%
+        add_ranef(sigma = sigma) %>%
+        # calculate DV
+        mutate(ffm = b_intercept + u_intercept + 
+                 (b_sex*sex) + 
+                 (b_rt*time) + (b_glp1*time*period*intervention) +
+                 (b_period*period*intervention) +
+                 sigma) |>
+        group_by(participant) |>
+        mutate(
+          sigma_AR = case_when(
+            time == 0 ~ sigma,
+            .default = sigma + rho_AR*lag(sigma)
+          ),
+          ffm_AR = b_intercept + u_intercept + 
+            (b_sex*sex) + 
+            (b_rt*time) + (b_glp1*time*period*intervention) +
+            (b_period*period*intervention) +
+            sigma_AR
+        )
+      
+      
+      model <- lme(ffm_AR ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time,
+                   random = ~ 1 | participant, data = data, correlation = corARMA(form = ~ 1 | participant, p = 1, q = 1))
+      
+      test_glp1_slope <- avg_slopes(
+        model,
+        by = c("intervention","period"),
+        variables = "time",
+        equivalence = c(-0.07, 0.13)
+      ) |>
+        slice_tail()
+      
+      test_glp1_slope <- as.data.frame(test_glp1_slope)
+      
+    }
+    
+    plan(cluster, workers = 10)
+    
+    safe_sim <- safely(sim)
+    
+    safe_simulations <- simulation_parameters %>% # not sure why base pipe doesn't work here
+      mutate(analysis = future_pmap(., safe_sim, .options=furrr_options(seed = TRUE))) |>
+    unnest(analysis)
+    
+    plan(sequential)
+    
+    # safe_simulations
+    
+    safe_simulations_clean <- safe_simulations |>
+      filter(map_lgl(analysis, ~ !is.null(.x) && nrow(.x) > 0)) |>
+      unnest(analysis)
+
+    safe_simulations_clean
+  }
+
+    
+  
   

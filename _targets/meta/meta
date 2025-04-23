@@ -13,10 +13,18 @@ SMD_RT_effect|stem|3b339b6a198490da|ee3ee6189149b522|570fd9cdd53380db|-182046256
 raw_RT_effect|stem|4e98d760fc4d5624|5ece95b60a3088df|c905193593cc6214|2019948347||t20201.4537212484s|s55b|55|rds|local|vector|||0.07||
 SMD_RT_energy_restriction_effect|stem|5c93b3d9a2015a18|aff7ba44c4f2100d|0359b27d2990f9dc|711602994||t20201.4537230156s|s56b|56|rds|local|vector|||0.14||
 beaver_data_file|stem|57f20858edf47eac|a72a82d57769fcd3|2c530c1562a7fbd1|-494364525|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/beaver_study_data.csv|t20201.4595529691s|s653b|653|file|local|vector|||1.31||
+beaver_data|stem|96132633f0c9d36c|f25711545dd8ca11|4cefc7fa77665c7b|-661966150||t20201.4821295842s|s508b|508|rds|local|vector|||0.25||
+irv_glp1_effect|stem|8ec4d1f8da321eca|9a38c0f18fcd4b2c|08d0e240b9f5d033|1799638176||t20201.4821306217s|s230b|230|rds|local|vector|||0.05|3 studies with NAs omitted from model fitting.. Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs.. 4 studies with NAs omitted from model fitting.|
+intercepts_lean_mass|stem|34218e54fb80d43f|914e1a45630c2899|d45cf4a3dca173e8|-37045232||t20201.5760860754s|s199b|199|rds|local|vector|||1.72||
+simulation_parameters_RT_counteract|stem|d70eccd054914a13|7f6e7fc7682e94f1|787f82fb18b59d17|1433165227||t20201.6522466798s|s618b|618|rds|local|vector|||0.02||
+power_simulations_RT_counteract|stem|83574b8a13ac7328|5b5a5210f72232a0|4f21d0c553f143cb|171367866||t20201.6528783435s|s48532b|48532|rds|local|vector|||54.54||
+simulation_parameters_RT_greater|stem|bb66121eea044b51|6ad629640f2468fc|986fa55cb57abc21|1805038486||t20201.6528794057s|s625b|625|rds|local|vector|||0||
+power_simulations_RT_greater|stem|269c7193e4977312|ba7f43a60f9b7002|917a83036cd0e757|-182523992||t20201.653468163s|s48133b|48133|rds|local|vector|||50.84||
 check_glp1_irv_assumption|function|d7ffdf6d0d3b2402
 get_SMD_energy_restriction_effect|function|ea1f07b636cd722c
 get_SMD_glp1_effect|function|440c47073955252e
 get_SMD_RT_energy_restriction_effect|function|b1bd107bbfeead8b
+define_simulation_parameters|function|371267aa122f03f1
 read_prep_benito_data|function|7fd40a570dca0e2d
 get_SMD_RT_effect|function|514ec2aa00717148
 read_prep_karakakis_data|function|057581e119c9c18e
@@ -24,6 +32,10 @@ prep_krupa_data|function|9c7f437cf07f846c
 get_raw_RT_effect|function|4e7a675f6bb6a2b9
 read_prep_beaver_data|function|970ea035803c862c
 get_raw_glp1_effect|function|2de9f04502c5bd42
+set_intercepts_lean_mass|function|a758b2abda36daf9
 read_prep_murphy_koehler_data|function|cd7ab3de1af6de5a
-beaver_data|stem|96132633f0c9d36c|f25711545dd8ca11|4cefc7fa77665c7b|-661966150||t20201.4821295842s|s508b|508|rds|local|vector|||0.25||
-irv_glp1_effect|stem|8ec4d1f8da321eca|9a38c0f18fcd4b2c|08d0e240b9f5d033|1799638176||t20201.4821306217s|s230b|230|rds|local|vector|||0.05|3 studies with NAs omitted from model fitting.. Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs.. 4 studies with NAs omitted from model fitting.|
+set_measurement_error|function|a60234f97c974d47
+simulate_power|function|ccae330e80ca41d1
+measurement_error|stem|82313d69bb055d65|ea2dbeafcc4b4edc|5be9e16243985231|-1640436695||t20201.6710976017s|s51b|51|rds|local|vector|||1.77||
+simulation_parameters|stem|154f96f061ce620b|6ad629640f2468fc|f56b5b40694e1460|2098987058||t20201.6710984289s|s778b|778|rds|local|vector|||0.02||
+power_simulations|stem|1d2224c74b2d6251|300a0dc64bcf6cc6|04de7d2a86c0bcbb|-2118540537||t20201.6722090911s|s102272b|102272|rds|local|vector|||95.91||
