@@ -348,7 +348,7 @@
     simulation_parameters <- crossing(
       rep = 1:10, # number of replicates
       participant_n = seq(10,200, by = 10), # range of participant N
-      measurement_n = 5, # number of measurements total (before and after intervention introduction)
+      measurement_n = seq(5, 11, by = 2), # number of measurements total (before and after intervention introduction)
       b_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass,intercepts_lean_mass$female_lean_mass), c(0.6,0.4)), # centred baseline intercept
       b_sex = intercepts_lean_mass$male_lean_mass - intercepts_lean_mass$female_lean_mass, # male-female weight diff in 
       b_rt = c(raw_RT_effect/12, (raw_glp1_effect/12)*-1), # effect of rt by week
@@ -423,27 +423,55 @@
       ) |>
         slice_tail()
       
-      test_glp1_slope <- as.data.frame(test_glp1_slope)
+      test_glp1_slope <- as.data.frame(test_glp1_slope) |>
+        bind_cols(
+          tibble(
+            glp1_effect_estimate = intervals(summary(model))$fixed[9,2],
+            glp1_effect_ci.lb = intervals(summary(model))$fixed[9,1],
+            glp1_effect_ci.ub = intervals(summary(model))$fixed[9,3],
+            glp1_effect_p.value = summary(model)$tTable[9,5],
+            RT_effect_estimate = intervals(summary(model))$fixed[3,2],
+            RT_effect_ci.lb = intervals(summary(model))$fixed[3,1],
+            RT_effect_ci.ub = intervals(summary(model))$fixed[3,3],
+            RT_effect_p.value = summary(model)$tTable[3,5]
+            
+          )
+        )
+      
+      rm(data)
+      rm(model)
+      
+      gc()
+      
+      return(test_glp1_slope)
       
     }
     
-    plan(cluster, workers = 10)
-    
     safe_sim <- safely(sim)
     
-    safe_simulations <- simulation_parameters %>% # not sure why base pipe doesn't work here
-      mutate(analysis = future_pmap(., safe_sim, .options=furrr_options(seed = TRUE))) |>
-    unnest(analysis)
+    # handlers(global = TRUE)  # allow progress bars
+    # 
+    # with_progress({
+    #   
+    #   p <- progressor(steps = nrow(simulation_parameters))
+    #   
+    #   safe_simulations <- simulation_parameters %>%
+    #     mutate(analysis = pmap(., function(...) {
+    #       p()
+    #       safe_sim(...)
+    #     }))
+    # })
     
-    plan(sequential)
+    safe_simulations <- simulation_parameters %>%
+      mutate(analysis = pmap(., safe_sim))
     
-    # safe_simulations
     
     safe_simulations_clean <- safe_simulations |>
-      filter(map_lgl(analysis, ~ !is.null(.x) && nrow(.x) > 0)) |>
+      filter(map_lgl(analysis, ~ !is.null(.x$result) && nrow(.x$result) > 0)) %>%
+      mutate(analysis = map(analysis, "result")) %>%
       unnest(analysis)
 
-    safe_simulations_clean
+    return(safe_simulations_clean)
   }
 
     

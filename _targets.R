@@ -5,7 +5,8 @@
 
 # Load packages required to define the pipeline:
 library(targets)
-# library(tarchetypes) # Load other packages as needed.
+library(tarchetypes) # Load other packages as needed.
+library(crew)
 
 # Set target options:
 tar_option_set(packages = c("here",
@@ -14,7 +15,15 @@ tar_option_set(packages = c("here",
                             "faux",
                             "nlme",
                             "marginaleffects",
-                            "furrr")) # Packages that your targets need for their tasks.
+                            "furrr",
+                            "progressr"),
+               seed = 1988,  # <-- GLOBAL reproducible seed
+               memory = "transient",
+               format = "qs",
+               garbage_collection = TRUE,
+               storage = "worker",
+               retrieval = "worker",
+               controller = crew_controller_local(workers = 20)) # Packages that your targets need for their tasks.
                # format = "qs", # Optionally set the default storage format. qs is fast.
                #
                # Pipelines that take a long time to run may benefit from
@@ -119,8 +128,25 @@ tar_option_set(packages = c("here",
                                                          raw_glp1_effect,
                                                          measurement_error)),
                  
-                 tar_target(power_simulations,
-                            simulate_power(simulation_parameters))
+                 tar_target(
+                   simulation_parameter_batches,
+                   split(simulation_parameters, ceiling(row_number(simulation_parameters)/1000)),
+                   iteration = "list"  # important to pass list elements separately
+                 ),
+                 
+                 tar_target(
+                   simulation_results,
+                   simulate_power(simulation_parameter_batches),
+                   pattern = map(simulation_parameter_batches)
+                  ),
+                 
+                 tar_target(
+                   simulation_results_combined,
+                   bind_rows(simulation_results)
+                 )
+                 
+                 # tar_target(power_simulations,
+                 #            simulate_power(simulation_parameters))
 
                  
                )

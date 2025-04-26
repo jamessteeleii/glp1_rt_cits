@@ -1,31 +1,37 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-benito_data_file|stem|5d5df98b12dd0ad2|a06043ee2ad8ef65|2c530c1562a7fbd1|-447947582|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/benito_study_data.csv|t20200.6771220424s|s8798b|8798|file|local|vector|||1.34||
-raw_glp1_effect|stem|ddca7d49b41aa481|f6ddf35e6ef61fe7|1e44e9f96c4e3fe0|-674087343||t20201.4082341673s|s55b|55|rds|local|vector|||0.01||
-murphy_koehler_data_file|stem|e9387be6ecdaf979|17e20b25a0e76910|2c530c1562a7fbd1|-2006996587|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/murphy_koehler_study_data.csv|t20194.6792054313s|s3612b|3612|file|local|vector|||0||
-krupa_data|stem|8bc83c694090f7af|f0ccff97f64e12c0|ef2b7a486f548f3d|1711686159||t20201.4082354936s|s380b|380|rds|local|vector|||0.03||
-karakakis_data_file|stem|6742f33135845070|c3d56fa5b2728da6|2c530c1562a7fbd1|337189100|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/karakakis_baseline_study_data.csv|t20194.5438160187s|s4637b|4637|file|local|vector|||0||
-benito_data|stem|bd5a39fd1e7d586a|9c149830aa6c8b46|b15fc900e7e86a76|1052204245||t20201.4082389129s|s1901b|1901|rds|local|vector|||0.25|input string 3 is invalid UTF-8. input string 4 is invalid UTF-8. input string 56 is invalid UTF-8. input string 133 is invalid UTF-8. [1m[22mExpected 2 pieces. Missing pieces filled with `NA` in 40 rows [1, 2, 3, 4, 5, 20, 21, 28, 31, 35, 36, 39, 40, 47, 56, 68, 71, 72, 74, 85, ...].|
-murphy_koehler_data|stem|a83a23e5b6aad2e9|ba3946f8e9bc57c7|fda17b05e44ee3a0|1678654920||t20201.4082401083s|s1119b|1119|rds|local|vector|||0.08||
-karakakis_data|stem|1e211e58ff98ec7e|43b8df18b3a8c802|04c0261467febdb8|1060355703||t20201.4082419884s|s808b|808|rds|local|vector|||0.14|input string 41 is invalid UTF-8. input string 42 is invalid UTF-8. [1m[22mExpected 2 pieces. Missing pieces filled with `NA` in 17 rows [6, 12, 13, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 47, 51, 52, 55].. [1m[22mThere was 1 warning in `mutate()`. [1m[22m[36mℹ[39m In argument: `mean = parse_number(mean)`. Caused by warning: [33m![39m 15 parsing failures. row col expected actual   6  -- a number     NR  12  -- a number     NR  13  -- a number     NR  33  -- a number     NR  34  -- a number     NR ... ... ........ ...... See problems(...) for more details.|
-SMD_glp1_effect|stem|edf3e83e55b04509|d19608700f477b0f|a43f81bcfbd5b49e|-855410416||t20201.4082441991s|s55b|55|rds|local|vector|||0.05|22 rows with NAs omitted from model fitting.|
-SMD_energy_restriction_effect|stem|c8607c2118ed54b6|dcd058531c0d1192|673d494038791a1f|1823705654||t20201.4537186579s|s723b|723|rds|local|vector|||0.02||
-SMD_RT_effect|stem|3b339b6a198490da|ee3ee6189149b522|570fd9cdd53380db|-1820462564||t20201.4537200297s|s55b|55|rds|local|vector|||0.08||
-raw_RT_effect|stem|4e98d760fc4d5624|5ece95b60a3088df|c905193593cc6214|2019948347||t20201.4537212484s|s55b|55|rds|local|vector|||0.07||
-SMD_RT_energy_restriction_effect|stem|5c93b3d9a2015a18|aff7ba44c4f2100d|0359b27d2990f9dc|711602994||t20201.4537230156s|s56b|56|rds|local|vector|||0.14||
-beaver_data_file|stem|57f20858edf47eac|a72a82d57769fcd3|2c530c1562a7fbd1|-494364525|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/beaver_study_data.csv|t20201.4595529691s|s653b|653|file|local|vector|||1.31||
-beaver_data|stem|96132633f0c9d36c|f25711545dd8ca11|4cefc7fa77665c7b|-661966150||t20201.4821295842s|s508b|508|rds|local|vector|||0.25||
-irv_glp1_effect|stem|8ec4d1f8da321eca|9a38c0f18fcd4b2c|08d0e240b9f5d033|1799638176||t20201.4821306217s|s230b|230|rds|local|vector|||0.05|3 studies with NAs omitted from model fitting.. Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs.. 4 studies with NAs omitted from model fitting.|
-intercepts_lean_mass|stem|34218e54fb80d43f|914e1a45630c2899|d45cf4a3dca173e8|-37045232||t20201.5760860754s|s199b|199|rds|local|vector|||1.72||
 simulation_parameters_RT_counteract|stem|d70eccd054914a13|7f6e7fc7682e94f1|787f82fb18b59d17|1433165227||t20201.6522466798s|s618b|618|rds|local|vector|||0.02||
 power_simulations_RT_counteract|stem|83574b8a13ac7328|5b5a5210f72232a0|4f21d0c553f143cb|171367866||t20201.6528783435s|s48532b|48532|rds|local|vector|||54.54||
 simulation_parameters_RT_greater|stem|bb66121eea044b51|6ad629640f2468fc|986fa55cb57abc21|1805038486||t20201.6528794057s|s625b|625|rds|local|vector|||0||
 power_simulations_RT_greater|stem|269c7193e4977312|ba7f43a60f9b7002|917a83036cd0e757|-182523992||t20201.653468163s|s48133b|48133|rds|local|vector|||50.84||
+power_simulations|stem|1d2224c74b2d6251|300a0dc64bcf6cc6|8413317f1158cf24|-2118540537||t20201.6722090911s||102272|rds|local|vector|||5.078||should not be called with handlers on the stack
+beaver_data_file|stem|57f20858edf47eac|a72a82d57769fcd3|2c530c1562a7fbd1|366753940|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/beaver_study_data.csv|t20201.4595529691s|s653b|653|file|local|vector|||2.687||
+benito_data_file|stem|5d5df98b12dd0ad2|a06043ee2ad8ef65|2c530c1562a7fbd1|-1225108647|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/benito_study_data.csv|t20200.6771220424s|s8798b|8798|file|local|vector|||3.031||
+karakakis_data_file|stem|6742f33135845070|c3d56fa5b2728da6|2c530c1562a7fbd1|1270339516|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/karakakis_baseline_study_data.csv|t20194.5438160187s|s4637b|4637|file|local|vector|||2.765||
+murphy_koehler_data_file|stem|e9387be6ecdaf979|17e20b25a0e76910|2c530c1562a7fbd1|-895081600|C:/Users/james/Dropbox/Research/Kieser Australia/Deakin University/GLP-1/glp1_rt_cits/data/murphy_koehler_study_data.csv|t20194.6792054313s|s3612b|3612|file|local|vector|||2.89||
+raw_glp1_effect|stem|1d01fe5bfbb7b8e9|f6ddf35e6ef61fe7|1e44e9f96c4e3fe0|266922091||t20204.5755601375s|s76b|76|qs|local|vector|||3||
+krupa_data|stem|44d53f55896005f3|f0ccff97f64e12c0|ef2b7a486f548f3d|1097069034||t20204.5755601375s|s451b|451|qs|local|vector|||2.922||
+intercepts_lean_mass|stem|da78e61bd34b2e36|914e1a45630c2899|d45cf4a3dca173e8|-1503011105||t20204.5755601375s|s246b|246|qs|local|vector|||3.171||
+measurement_error|stem|6c2ec209c8608f75|ea2dbeafcc4b4edc|5be9e16243985231|579791658||t20204.5755601375s|s76b|76|qs|local|vector|||2.953||
+SMD_energy_restriction_effect|stem|1d7738f4620e80a2|dcd058531c0d1192|1401935b2b35c33c|-712710331||t20204.5755665029s|s820b|820|qs|local|vector|||0||
+murphy_koehler_data|stem|124d245959d9e56c|ba3946f8e9bc57c7|fda17b05e44ee3a0|340384201||t20204.5755702157s|s1200b|1200|qs|local|vector|||0.515||
+benito_data|stem|36212fcca0bc6e1d|9c149830aa6c8b46|b15fc900e7e86a76|-1204875406||t20204.5755709108s|s2078b|2078|qs|local|vector|||0.594|input string 3 is invalid UTF-8. input string 4 is invalid UTF-8. input string 56 is invalid UTF-8. input string 133 is invalid UTF-8. [1m[22mExpected 2 pieces. Missing pieces filled with `NA` in 40 rows [1, 2, 3, 4, 5, 20, 21, 28, 31, 35, 36, 39, 40, 47, 56, 68, 71, 72, 74, 85, ...].|
+beaver_data|stem|09e311484a8967c8|f25711545dd8ca11|4cefc7fa77665c7b|-1244302112||t20204.575571097s|s576b|576|qs|local|vector|||0.734||
+karakakis_data|stem|ad1b070f62de4b93|43b8df18b3a8c802|04c0261467febdb8|1829141824||t20204.5755712476s|s914b|914|qs|local|vector|||0.625|input string 41 is invalid UTF-8. input string 42 is invalid UTF-8. [1m[22mExpected 2 pieces. Missing pieces filled with `NA` in 17 rows [6, 12, 13, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 47, 51, 52, 55].. [1m[22mThere was 1 warning in `mutate()`. [1m[22m[36mℹ[39m In argument: `mean = parse_number(mean)`. Caused by warning: [33m![39m 15 parsing failures. row col expected actual   6  -- a number     NR  12  -- a number     NR  13  -- a number     NR  33  -- a number     NR  34  -- a number     NR ... ... ........ ...... See problems(...) for more details.|
+SMD_RT_energy_restriction_effect|stem|8c585a0fcb5a3b87|aff7ba44c4f2100d|1320ab42d372af17|713630285||t20204.5755775626s|s76b|76|qs|local|vector|||0.14||
+raw_RT_effect|stem|9505a025924329c7|5ece95b60a3088df|940a940dde23e86d|-1362080699||t20204.5755783978s|s76b|76|qs|local|vector|||0.078||
+irv_glp1_effect|stem|87d3de992a7ed77b|9a38c0f18fcd4b2c|3483ed6e5e704240|-1067102379||t20204.5755784557s|s276b|276|qs|local|vector|||0.047|3 studies with NAs omitted from model fitting.. Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs.. 4 studies with NAs omitted from model fitting.|
+SMD_glp1_effect|stem|406e04d7dc46a44e|d19608700f477b0f|70f7c39947adfa3e|1535176217||t20204.575578502s|s76b|76|qs|local|vector|||0.047|22 rows with NAs omitted from model fitting.|
+SMD_RT_effect|stem|337f852a3ce480c3|ee3ee6189149b522|a84d4d65bb9ef67e|-2115784231||t20204.575578699s|s76b|76|qs|local|vector|||0.094||
+simulation_parameters|stem|e6b6dc49fef23e2a|6ad629640f2468fc|7a6efde1005a369b|422348393||t20204.5755832217s|s1248b|1248|qs|local|vector|||0.016||
+simulation_results_0493e3f9c306bedb|branch||a0a875e5851546e3|6188b5beaaa7f298|-2012233677||t20204.575611983s||0|qs|local|vector|simulation_results||0.094||should not be called with handlers on the stack
+simulation_parameter_batches|stem|0d8022d3450d2dad|ad57ca90da72e471|222909979b99cd89|100104322||t20204.5859453866s|s2572b|2572|qs|local|list||simulation_parameter_batches_9bbbcce886bdbd34*simulation_parameter_batches_208e5c477df5abe0*simulation_parameter_batches_25d8635eff5d0a38*simulation_parameter_batches_85bd037f00777830*simulation_parameter_batches_420f902bec660bba|0||
 check_glp1_irv_assumption|function|d7ffdf6d0d3b2402
 get_SMD_energy_restriction_effect|function|ea1f07b636cd722c
 get_SMD_glp1_effect|function|440c47073955252e
 get_SMD_RT_energy_restriction_effect|function|b1bd107bbfeead8b
-define_simulation_parameters|function|371267aa122f03f1
+define_simulation_parameters|function|35628a27d56a01aa
 read_prep_benito_data|function|7fd40a570dca0e2d
+.Random.seed|object|fa00c7a91ed096b8
 get_SMD_RT_effect|function|514ec2aa00717148
 read_prep_karakakis_data|function|057581e119c9c18e
 prep_krupa_data|function|9c7f437cf07f846c
@@ -35,7 +41,11 @@ get_raw_glp1_effect|function|2de9f04502c5bd42
 set_intercepts_lean_mass|function|a758b2abda36daf9
 read_prep_murphy_koehler_data|function|cd7ab3de1af6de5a
 set_measurement_error|function|a60234f97c974d47
-simulate_power|function|ccae330e80ca41d1
-measurement_error|stem|82313d69bb055d65|ea2dbeafcc4b4edc|5be9e16243985231|-1640436695||t20201.6710976017s|s51b|51|rds|local|vector|||1.77||
-simulation_parameters|stem|154f96f061ce620b|6ad629640f2468fc|f56b5b40694e1460|2098987058||t20201.6710984289s|s778b|778|rds|local|vector|||0.02||
-power_simulations|stem|1d2224c74b2d6251|300a0dc64bcf6cc6|04de7d2a86c0bcbb|-2118540537||t20201.6722090911s|s102272b|102272|rds|local|vector|||95.91||
+simulate_power|function|1376496697e25492
+simulation_results_7b0dbbd855a0e907|branch|d55a0f6edb25999a|a0a875e5851546e3|908f27cb044f8005|-1201183010||t20204.59523908s|s86106b|86106|qs|local|vector|simulation_results||672.172||
+simulation_results_96d8020c62c440e3|branch|83a2769c31d88a5a|a0a875e5851546e3|908f27cb044f8005|1671683747||t20204.5964182072s|s105917b|105917|qs|local|vector|simulation_results||774.328||
+simulation_results_bc4c23a6927c7c3c|branch|4cc7cc01419dacb5|a0a875e5851546e3|908f27cb044f8005|498030214||t20204.5964585803s|s107235b|107235|qs|local|vector|simulation_results||777.641||
+simulation_results_f07a6ca816f8e1c2|branch|1c0d454fe40abe15|a0a875e5851546e3|908f27cb044f8005|265833257||t20204.5964702167s|s108230b|108230|qs|local|vector|simulation_results||778.64||
+simulation_results_7b996effc38a57aa|branch|9b9a99bec48a827b|a0a875e5851546e3|908f27cb044f8005|103299489||t20204.5965049743s|s109889b|109889|qs|local|vector|simulation_results||781.687||
+simulation_results|pattern|75c095a265f8fa24|a0a875e5851546e3||-1128379069||||517377|qs|local|vector||simulation_results_96d8020c62c440e3*simulation_results_7b996effc38a57aa*simulation_results_bc4c23a6927c7c3c*simulation_results_f07a6ca816f8e1c2*simulation_results_7b0dbbd855a0e907|3784.468||
+simulation_results_combined|stem|63630ff88c918383|609b9a06c50b8f8a|7a4f1c0d7b3959cc|1847906958||t20204.5965116224s|s497928b|497928|qs|local|vector|||0||
