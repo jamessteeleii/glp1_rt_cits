@@ -346,7 +346,7 @@
                                            measurement_error) {
     
     simulation_parameters <- crossing(
-      rep = 1:10, # number of replicates
+      rep = 1:1000, # number of replicates
       participant_n = seq(10,200, by = 10), # range of participant N
       measurement_n = seq(5, 11, by = 2), # number of measurements total (before and after intervention introduction)
       b_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass,intercepts_lean_mass$female_lean_mass), c(0.6,0.4)), # centred baseline intercept

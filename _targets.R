@@ -23,7 +23,7 @@ tar_option_set(packages = c("here",
                garbage_collection = TRUE,
                storage = "worker",
                retrieval = "worker",
-               controller = crew_controller_local(workers = 20)) # Packages that your targets need for their tasks.
+               controller = crew_controller_local(workers = 10)) # Packages that your targets need for their tasks.
                # format = "qs", # Optionally set the default storage format. qs is fast.
                #
                # Pipelines that take a long time to run may benefit from
