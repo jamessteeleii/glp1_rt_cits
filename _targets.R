@@ -123,18 +123,7 @@ tar_option_set(packages = c("here",
                  
                  ### Set parameters and run simulation for power of both IPTW and balanced matching
 
-                 # IPTW method
-                 
-                 
-                 # tar_target(
-                 #   simulation_population_data_batches,
-                 #   {
-                 #     # Each batch generates 100 population datasets
-                 #     map(seq_len(100), ~ simulate_population_data())
-                 #   },
-                 #   pattern = map(1:10)  
-                 # )
-                  
+                 # First simulate the population datasets to use
                  tar_target(
                      simulation_population_batch_ids,
                      seq_len(ceiling(1000 / 100)) # no. simulations / number per batch
@@ -155,32 +144,73 @@ tar_option_set(packages = c("here",
                  tar_target(
                      simulation_population_results_combined,
                      bind_rows(simulation_population_batches)
-                   )
+                   ),
+                
+               
+                 # Now set the parameters for both sets of models
+                 tar_target(simulation_parameters,
+                            define_simulation_parameters(intercepts_lean_mass,
+                                                         raw_RT_effect,
+                                                         raw_glp1_effect,
+                                                         measurement_error,
+                                                         simulation_population_results_combined)),
+                 
+                 
+                 
+                 # Now simulate and fit the IPTW models
+                 tar_target(
+                   population_split,
+                   split(simulation_population_results_combined, simulation_population_results_combined$rep),
+                   iteration = "list"  # important to pass list elements separately
+                 ),
+                 
+                 tar_target(
+                   simulation_parameter_grid,
+                   simulation_parameters %>%
+                     select(-rep, -participant_n) %>%
+                     distinct()
+                 ),
+                 
+                 tar_target(
+                   population_rep,
+                   population_split,
+                   pattern = map(population_split),
+                   iteration = "list"
+                 ),
+                 
+                 tar_target(
+                   simulation_parameter,
+                   simulation_parameter_grid,
+                   pattern = map(simulation_parameter_grid),
+                   iteration = "list"
+                 ),
+                 
+                 tar_target(
+                   simulation_iptw_result,
+                   simulate_iptw_power(
+                     population_data = population_rep,
+                     simulation_parameters = simulation_parameter
+                   ),
+                   pattern = cross(population_rep, simulation_parameter),
+                   iteration = "list"
+                 ),
+                 
+
+                 # Now simulate and fit the balanced matched models
+                 tar_target(
+                   simulation_parameter_batches,
+                   split(simulation_parameters, ceiling(row_number(simulation_parameters)/1000)),
+                   iteration = "list"  # important to pass list elements separately
+                 ),
+
+                 tar_target(
+                   simulation_results,
+                   simulate_power(simulation_parameter_batches),
+                   pattern = map(simulation_parameter_batches)
+                  ),
+
+                 tar_target(
+                   simulation_results_combined,
+                   bind_rows(simulation_results)
                  )
-                 
-                 
-                 
-# 
-# 
-#                  tar_target(simulation_parameters,
-#                             define_simulation_parameters(intercepts_lean_mass,
-#                                                          raw_RT_effect,
-#                                                          raw_glp1_effect,
-#                                                          measurement_error)),
-# 
-#                  tar_target(
-#                    simulation_parameter_batches,
-#                    split(simulation_parameters, ceiling(row_number(simulation_parameters)/1000)),
-#                    iteration = "list"  # important to pass list elements separately
-#                  ),
-# 
-#                  tar_target(
-#                    simulation_results,
-#                    simulate_power(simulation_parameter_batches),
-#                    pattern = map(simulation_parameter_batches)
-#                   ),
-# 
-#                  tar_target(
-#                    simulation_results_combined,
-#                    bind_rows(simulation_results)
-#                  )
+               )

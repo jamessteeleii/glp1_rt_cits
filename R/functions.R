@@ -43,7 +43,7 @@
       mutate(
         arm = cur_group_id()
       ) |>
-      filter(outcome == "ffm") |>
+      filter(outcome == "lmm") |>
       mutate(
         duration_centre = duration/12
       ) |>
@@ -445,21 +445,24 @@
   
   # Define all simulation parameters for a balanced matching design
   # Note approx 46.7% male users and 53.3% female - from 10.1007/s00228-023-03539-8 - so weighted intercept and sigma
-  define_simulation_matching_parameters <- function(intercepts_lean_mass,
+  define_simulation_parameters <- function(intercepts_lean_mass,
                                            raw_RT_effect,
                                            raw_glp1_effect,
                                            measurement_error,
-                                           population_data) {
+                                           simulation_population_results_combined) {
     
     # Estimated number of GLP1-RA users in Kieser population
-    max_participants <- population_data |>
-      filter(intervention == 1) |>
-      nrow()
+    max_participants <- simulation_population_results_combined  |>
+      group_by(rep) |> 
+      filter(intervention == 1) |> 
+      count() |> 
+      ungroup() |> 
+      summarise(median_n = median(n))
     
-    simulation_matching_parameters <- crossing(
+    simulation_parameters <- crossing(
       rep = 1:1000, # number of replicates
       # note participant numbers are log scale sequenced
-      participant_n = round(exp(seq(log(20), log(max_participants*2), length.out = 10))), # range of participant N
+      participant_n = round(exp(seq(log(20), log(max_participants$median_n*2), length.out = 10))), # range of participant N
       measurement_n = seq(5, 11, by = 2), # number of measurements total (before and after intervention introduction)
       b_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass,intercepts_lean_mass$female_lean_mass), c(0.6,0.4)), # centred baseline intercept
       b_sex = intercepts_lean_mass$male_lean_mass - intercepts_lean_mass$female_lean_mass, # male-female weight diff in 
@@ -474,9 +477,85 @@
     
   }
 
+  simulate_iptw_power <- function(population_data, simulation_parameters) {
+    
+    # Merge the data and parameters
+    pop <- population_data
+    params <- simulation_parameters
+    
+    weeks <- params$measurement_n*12
+    
+    # set up data structure
+    data <- pop |>
+      # add within participant time
+      add_within("participant", time = seq(from=0,to=weeks, by=12)) |>
+      mutate(period = case_when(
+        time >= weeks/2 ~ 1,
+        .default = 0
+      )) |>
+     
+      # add random effects 
+      add_ranef("participant", u_intercept = params$u_intercept) |>
+      add_ranef(sigma = params$sigma) |>
+      # calculate DV
+      mutate(lmm = params$b_intercept + u_intercept + 
+               (params$b_sex*sex_code) + 
+               (params$b_rt*time) + (params$b_glp1*time*period*intervention) +
+               (params$b_period*period*intervention) +
+               sigma) |>
+      group_by(participant) |>
+      mutate(
+        sigma_AR = case_when(
+          time == 0 ~ sigma,
+          .default = sigma + params$rho_AR*lag(sigma)
+        ),
+        lmm_AR = params$b_intercept + u_intercept + 
+          (params$b_sex*sex_code) + 
+          (params$b_rt*time) + (params$b_glp1*time*period*intervention) +
+          (params$b_period*period*intervention) +
+          sigma_AR
+      )
+    
+    model <-  glmtoolbox::glmgee(lmm_AR ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time,
+                                 id = participant,
+                                 data = data,
+                                 weights=iptw,
+                                 corstr = "AR-M-dependent(1)")
+    
+    test_glp1_slope <- avg_slopes(
+      model,
+      by = c("intervention","period"),
+      variables = "time",
+      equivalence = c(-0.07, 0.13)
+    ) |>
+      slice_tail()
+    
+    test_glp1_slope <- as.data.frame(test_glp1_slope) |>
+      bind_cols(
+        tibble(
+          glp1_effect_estimate = tidy(model, conf.int = TRUE)[9,2],
+          glp1_effect_ci.lb = tidy(model, conf.int = TRUE)[9,6],
+          glp1_effect_ci.ub = tidy(model, conf.int = TRUE)[9,7],
+          glp1_effect_p.value = tidy(model, conf.int = TRUE)[9,5],
+          RT_effect_estimate = tidy(model, conf.int = TRUE)[3,2],
+          RT_effect_ci.lb = tidy(model, conf.int = TRUE)[3,6],
+          RT_effect_ci.ub = tidy(model, conf.int = TRUE)[3,7],
+          RT_effect_p.value = tidy(model, conf.int = TRUE)[3,5]
+          
+        )
+      )
+    
+    rm(data)
+    rm(model)
+    
+    gc()
+    
+    return(test_glp1_slope)
+      
+    }
+
   
-  
-  simulate_matching_power <- function(simulation_matching_parameters) {
+  simulate_matching_power <- function(simulation_parameters) {
     
     sim <- function(participant_n = as.double(), measurement_n = as.double(),
                     b_intercept = as.double(), b_sex = as.double(), b_rt = as.double(), b_glp1 = as.double(), # fixed effects
@@ -493,7 +572,7 @@
       # set up data structure
       data <- 
         
-        add_random(participant = participant_n) %>%
+        add_random(participant = participant_n) |>
         # add within participant time
         add_within("participant", time = seq(from=0,to=weeks, by=12)) |>
         mutate(period = case_when(
@@ -501,13 +580,13 @@
           .default = 0
         )) |>
         # add and code categorical variables
-        add_between("participant", intervention = c(0, 1)) %>% # con = 0, glp1 = 1
-        add_between("participant", sex = c(-0.5, 0.5), .prob = c(0.533, 0.467)) %>% # female = -0.5, male  = 0.5
+        add_between("participant", intervention = c(0, 1)) |> # con = 0, glp1 = 1
+        add_between("participant", sex = c(-0.5, 0.5), .prob = c(0.533, 0.467)) |> # female = -0.5, male  = 0.5
         # add random effects 
-        add_ranef("participant", u_intercept = u_intercept) %>%
-        add_ranef(sigma = sigma) %>%
+        add_ranef("participant", u_intercept = u_intercept) |>
+        add_ranef(sigma = sigma) |>
         # calculate DV
-        mutate(ffm = b_intercept + u_intercept + 
+        mutate(lmm = b_intercept + u_intercept + 
                  (b_sex*sex) + 
                  (b_rt*time) + (b_glp1*time*period*intervention) +
                  (b_period*period*intervention) +
@@ -518,7 +597,7 @@
             time == 0 ~ sigma,
             .default = sigma + rho_AR*lag(sigma)
           ),
-          ffm_AR = b_intercept + u_intercept + 
+          lmm_AR = b_intercept + u_intercept + 
             (b_sex*sex) + 
             (b_rt*time) + (b_glp1*time*period*intervention) +
             (b_period*period*intervention) +
@@ -526,7 +605,7 @@
         )
       
       
-      model <- lme(ffm_AR ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time,
+      model <- lme(lmm_AR ~ sex + time + intervention + time:intervention + period + period:time + period:intervention + period:intervention:time,
                    random = ~ 1 | participant, data = data, correlation = corARMA(form = ~ 1 | participant, p = 1, q = 1))
       
       test_glp1_slope <- avg_slopes(
@@ -567,8 +646,8 @@
       mutate(analysis = pmap(., safe_sim))
     
     safe_simulations_clean <- safe_simulations |>
-      filter(map_lgl(analysis, ~ !is.null(.x$result) && nrow(.x$result) > 0)) %>%
-      mutate(analysis = map(analysis, "result")) %>%
+      filter(map_lgl(analysis, ~ !is.null(.x$result) && nrow(.x$result) > 0)) |>
+      mutate(analysis = map(analysis, "result")) |>
       unnest(analysis)
 
     return(safe_simulations_clean)
