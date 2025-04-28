@@ -121,33 +121,66 @@ tar_option_set(packages = c("here",
                             set_measurement_error()),
                  
                  
-                 ### Set parameters and run simulation for power
-                 tar_target(simulation_parameters,
-                            define_simulation_parameters(intercepts_lean_mass,
-                                                         raw_RT_effect,
-                                                         raw_glp1_effect,
-                                                         measurement_error)),
+                 ### Set parameters and run simulation for power of both IPTW and balanced matching
+
+                 # IPTW method
                  
-                 tar_target(
-                   simulation_parameter_batches,
-                   split(simulation_parameters, ceiling(row_number(simulation_parameters)/1000)),
-                   iteration = "list"  # important to pass list elements separately
-                 ),
                  
+                 # tar_target(
+                 #   simulation_population_data_batches,
+                 #   {
+                 #     # Each batch generates 100 population datasets
+                 #     map(seq_len(100), ~ simulate_population_data())
+                 #   },
+                 #   pattern = map(1:10)  
+                 # )
+                  
                  tar_target(
-                   simulation_results,
-                   simulate_power(simulation_parameter_batches),
-                   pattern = map(simulation_parameter_batches)
-                  ),
-                 
+                     simulation_population_batch_ids,
+                     seq_len(ceiling(1000 / 100)) # no. simulations / number per batch
+                   ),
+                   
                  tar_target(
-                   simulation_results_combined,
-                   bind_rows(simulation_results)
+                     simulation_population_batches,
+                     {
+                       # Figure out the starting ID for this batch
+                       start_id <- (simulation_population_batch_ids - 1) * 100 + 1
+                       
+                       # Each batch generates `batch_size` population datasets
+                       map2(seq_len(100), start_id:(start_id + 100 - 1), ~ simulate_population_data(rep = .y))
+                     },
+                     pattern = map(simulation_population_batch_ids)
+                   ),
+                   
+                 tar_target(
+                     simulation_population_results_combined,
+                     bind_rows(simulation_population_batches)
+                   )
                  )
                  
-                 # tar_target(power_simulations,
-                 #            simulate_power(simulation_parameters))
-
                  
-               )
-               
+                 
+# 
+# 
+#                  tar_target(simulation_parameters,
+#                             define_simulation_parameters(intercepts_lean_mass,
+#                                                          raw_RT_effect,
+#                                                          raw_glp1_effect,
+#                                                          measurement_error)),
+# 
+#                  tar_target(
+#                    simulation_parameter_batches,
+#                    split(simulation_parameters, ceiling(row_number(simulation_parameters)/1000)),
+#                    iteration = "list"  # important to pass list elements separately
+#                  ),
+# 
+#                  tar_target(
+#                    simulation_results,
+#                    simulate_power(simulation_parameter_batches),
+#                    pattern = map(simulation_parameter_batches)
+#                   ),
+# 
+#                  tar_target(
+#                    simulation_results_combined,
+#                    bind_rows(simulation_results)
+#                  )

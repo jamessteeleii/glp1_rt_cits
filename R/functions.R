@@ -330,24 +330,136 @@
   
   # Set error term based on approx measurement error taken from 
   set_measurement_error <- function() {
-    # sigma <- 0.35 10.1123/ijsnem.2018-0283
-    sigma <- 2.5 # from above but conservative just based on triangulating agreement between devices
-    # sigma <- 0.6 # https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2024.1491931/full 
+    sigma <- 2.5 # from 10.1123/ijsnem.2018-0283 but conservative just based on triangulating agreement between devices
     
   }
   
 ### Simulate data for an interrupted time series with control ----
   
-  # Define all simulation parameters
+  # Simulate population data for Kieser members
+  simulate_population_data <- function(rep = NULL) {
+    
+    
+    add_ranef_pre <- function (.data, .by = NULL, .pre = NULL, .var = NULL, sd = 0, mu = 0, r = 0, .empirical = FALSE) 
+    {
+      
+      grps <- .data[.by]
+      pre <- .data[.pre]
+      sd <- sd
+      mu <- mu
+      ranefs <- faux::rnorm_pre(pre, mu = mu, sd = sd, 
+                                r = r, empirical = .empirical) %>% dplyr::bind_cols(grps)
+      
+      var_sym <- rlang::sym(.var)
+      names(ranefs)[1] <- .var
+      
+      dplyr::left_join(.data, ranefs, by = .by)
+    }
+    
+    
+    population_n <- 24000
+    
+    population_data <- 
+      
+      # Add participants within groups, random number
+      add_random(participant = population_n) |>
+      
+      # Add age based on Kieser mean and sd
+      add_between("participant", age = truncnorm::rtruncnorm(population_n, a = 18, b = 105, mean = 56.3, sd = 14)) %>%
+      
+      # Add a categorical predictor sex
+      add_between("participant", .prob = c(0.46,0.54), sex = c("male", "female")) |>
+      add_recode("sex", "sex_code", male = 0, female = 1) |>
+      
+      # Add a categorical predictor for insured or not
+      add_between("participant", .prob = c(0.58,0.42), insured = c("uninsured", "insured")) |>
+      add_recode("insured", "insured_code", uninsured = 0, insured = 1) |>
+      
+      # Add a categorical predictor for CVD or not
+      add_between("participant", .prob = c(1-0.004,0.004), cvd = c("healthy", "cvd")) |>
+      add_recode("cvd", "cvd_code", healthy = 0, cvd = 1) |>
+      
+      # Add a categorical predictor for diabetes or not
+      add_between("participant", .prob = c(1-0.005,0.005), diabetes = c("healthy", "diabetes")) |>
+      add_recode("diabetes", "diabetes_code", healthy = 0, diabetes = 1) |>
+      
+      # Add a categorical predictor for knee/hip OA or not
+      add_between("participant", .prob = c(1-0.15,0.15), OA = c("healthy", "OA")) |>
+      add_recode("OA", "OA_code", healthy = 0, OA = 1)
+    
+    # Split to male and female and then add weight and height based on means and sd from Kieser member data and correlations with age
+    
+    population_data_male <- population_data |>
+      filter(sex == "male") |>
+      
+      # Add height, and weight based on mean group age and also their correlations
+      add_ranef_pre("participant", "age", .var = "height", mu = 179, sd = 7.5, r = -0.188) |> 
+      add_ranef_pre("participant", c("age","height"), .var = "weight", mu = 88.2, sd = 15.3, r = c(-0.00732, 0.399))
+    
+    population_data_female <- population_data |>
+      filter(sex == "female") |>
+      
+      # Add height, and weight based on mean group age and also their correlations
+      add_ranef_pre("participant", "age", .var = "height", mu = 165, sd = 7.3, r = -0.172) |> 
+      add_ranef_pre("participant", c("age","height"), .var = "weight", mu = 73.6, sd = 17, r = c(-0.00199, 0.260))
+    
+    
+    population_data <- bind_rows(population_data_male, population_data_female) |>
+      # Add bmi category
+      mutate(bmi = weight/(height/100)^2,
+             bmi_cat = case_when(
+               bmi < 18.5 ~ "underweight",
+               bmi >= 18.5 & bmi < 25 ~ "healthy",
+               bmi >= 25 & bmi < 30 ~ "overweight",
+               bmi >= 30 & bmi < 40 ~ "obese",
+               bmi >= 40 ~ "severely obese"
+             )) |>
+      
+      # filter to those eligible for GLP1-RAs i.e., overweight or above
+      filter(bmi >= 25) |>
+      
+      # add indicator coding for categorical variables with more than one category
+      mutate(
+        age_40_65 = if_else(age >= 40 & age < 65, 1, 0),
+        age_over_65 = if_else(age >= 65, 1, 0),
+        obesity_code = if_else(bmi >= 30, 1, 0)
+      )
+    
+    
+    population_data <- population_data %>%
+      mutate(
+        # ORs taken from 10.1101/2025.01.20.25320839 for variables we have for our members and intercept based on ~ 1 millions (of ~26.6 million) Australians using GLP1-RAs
+        logit_pscore = -3.25 + log(1.21)*age_40_65 + log(0.38)*age_over_65 + log(0.81)*insured_code + log(1.66)*obesity_code + log(0.75)*cvd_code + log(2.19)*diabetes_code + log(0.49)*OA_code,
+        pscore = plogis(logit_pscore),
+        intervention = rbinom(n(), 1, pscore),
+        iptw = case_when(
+          intervention == 1 ~ 1/pscore,
+          intervention == 0 ~ 1/(1-pscore)
+        )
+      ) |>
+      mutate(rep = rep)
+    
+    return(population_data)
+  }
+
+  
+  # Define all simulation parameters for a balanced matching design
   # Note approx 46.7% male users and 53.3% female - from 10.1007/s00228-023-03539-8 - so weighted intercept and sigma
-  define_simulation_parameters <- function(intercepts_lean_mass,
+  define_simulation_matching_parameters <- function(intercepts_lean_mass,
                                            raw_RT_effect,
                                            raw_glp1_effect,
-                                           measurement_error) {
+                                           measurement_error,
+                                           population_data) {
     
-    simulation_parameters <- crossing(
+    # Estimated number of GLP1-RA users in Kieser population
+    max_participants <- population_data |>
+      filter(intervention == 1) |>
+      nrow()
+    
+    simulation_matching_parameters <- crossing(
       rep = 1:1000, # number of replicates
-      participant_n = seq(10,200, by = 10), # range of participant N
+      # note participant numbers are log scale sequenced
+      participant_n = round(exp(seq(log(20), log(max_participants*2), length.out = 10))), # range of participant N
       measurement_n = seq(5, 11, by = 2), # number of measurements total (before and after intervention introduction)
       b_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass,intercepts_lean_mass$female_lean_mass), c(0.6,0.4)), # centred baseline intercept
       b_sex = intercepts_lean_mass$male_lean_mass - intercepts_lean_mass$female_lean_mass, # male-female weight diff in 
@@ -355,7 +467,7 @@
       b_glp1 = raw_glp1_effect/12, # effect of glp1 by week
       b_period = 1, 
       b_intervention = 1,
-      rho_AR = c(0,0.5,1),
+      rho_AR = c(0.1,0.5,0.9),
       u_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass_sigma,intercepts_lean_mass$female_lean_mass_sigma), c(0.467,0.533)), # weighted random intercept as roughly 60:40 split of males and females using glp1
       sigma = measurement_error
     )
@@ -364,7 +476,7 @@
 
   
   
-  simulate_power <- function(simulation_parameters) {
+  simulate_matching_power <- function(simulation_matching_parameters) {
     
     sim <- function(participant_n = as.double(), measurement_n = as.double(),
                     b_intercept = as.double(), b_sex = as.double(), b_rt = as.double(), b_glp1 = as.double(), # fixed effects
@@ -379,7 +491,9 @@
       weeks <- measurement_n*12
       
       # set up data structure
-      data <- add_random(participant = participant_n) %>%
+      data <- 
+        
+        add_random(participant = participant_n) %>%
         # add within participant time
         add_within("participant", time = seq(from=0,to=weeks, by=12)) |>
         mutate(period = case_when(
@@ -449,22 +563,8 @@
     
     safe_sim <- safely(sim)
     
-    # handlers(global = TRUE)  # allow progress bars
-    # 
-    # with_progress({
-    #   
-    #   p <- progressor(steps = nrow(simulation_parameters))
-    #   
-    #   safe_simulations <- simulation_parameters %>%
-    #     mutate(analysis = pmap(., function(...) {
-    #       p()
-    #       safe_sim(...)
-    #     }))
-    # })
-    
-    safe_simulations <- simulation_parameters %>%
+    safe_simulations <- simulation_matching_parameters %>%
       mutate(analysis = pmap(., safe_sim))
-    
     
     safe_simulations_clean <- safe_simulations |>
       filter(map_lgl(analysis, ~ !is.null(.x$result) && nrow(.x$result) > 0)) %>%
