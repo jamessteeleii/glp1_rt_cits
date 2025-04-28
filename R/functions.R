@@ -339,7 +339,7 @@
 ### Simulate data for an interrupted time series with control ----
   
   # Define all simulation parameters
-  # Note approx 60% male users and 40% female - from 10.1007/s00228-023-03539-8 - so weighted intercept and sigma
+  # Note approx 46.7% male users and 53.3% female - from 10.1007/s00228-023-03539-8 - so weighted intercept and sigma
   define_simulation_parameters <- function(intercepts_lean_mass,
                                            raw_RT_effect,
                                            raw_glp1_effect,
@@ -356,7 +356,7 @@
       b_period = 1, 
       b_intervention = 1,
       rho_AR = c(0,0.5,1),
-      u_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass_sigma,intercepts_lean_mass$female_lean_mass_sigma), c(0.6,0.4)), # weighted random intercept as roughly 60:40 split of males and females using glp1
+      u_intercept = weighted.mean(c(intercepts_lean_mass$male_lean_mass_sigma,intercepts_lean_mass$female_lean_mass_sigma), c(0.467,0.533)), # weighted random intercept as roughly 60:40 split of males and females using glp1
       sigma = measurement_error
     )
     
@@ -388,7 +388,7 @@
         )) |>
         # add and code categorical variables
         add_between("participant", intervention = c(0, 1)) %>% # con = 0, glp1 = 1
-        add_between("participant", sex = c(-0.5, 0.5), .prob = c(0.4, 0.6)) %>% # female = -0.5, male  = 0.5
+        add_between("participant", sex = c(-0.5, 0.5), .prob = c(0.533, 0.467)) %>% # female = -0.5, male  = 0.5
         # add random effects 
         add_ranef("participant", u_intercept = u_intercept) %>%
         add_ranef(sigma = sigma) %>%
